@@ -1,0 +1,44 @@
+apiVersion: apps/v1 #ina api version dyal kubernets 
+kind: Deployment   # ina resource dyal kubernets li ghadi nst3mlo bach ndirou deployement dyal backend
+metadata: # metadata dyal deployment, fih smiya w labels
+      name: backend
+spec: # specification dyal deployment, fih replicas w selector w template
+  replicas: 1
+  selector:   #9alb liya 3la label smitha backened bach tkon own l kubernets 
+    matchLabels:
+        app: backend
+  template:   # swab liya pods smitha backend 
+    metadata:
+      labels:
+        app: backend
+    spec: 
+      containers:  # container li ghadi nst3mlo bach ndirou deployement dyal backend
+        - name: backend
+          image: k8s-demo-shop-backend:latest # image li ghadi nst3mlo bach ndirou deployement dyal backend
+          imagePullPolicy: Never # policy li ghadi nst3mlo bach ndirou deployement dyal backend
+          ports:
+            - containerPort: 3001 # port li ghadi nst3mlo bach ndirou deployement dyal backend
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 3001    
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 3001
+            initialDelaySeconds: 5
+          envFrom:
+            - configMapRef:
+                name: backend-config
+            - secretRef:
+                name: backend-secret
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "256Mi"
+              
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
