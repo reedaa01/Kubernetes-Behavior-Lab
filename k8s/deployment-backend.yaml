@@ -3,7 +3,7 @@ kind: Deployment   # ina resource dyal kubernets li ghadi nst3mlo bach ndirou de
 metadata: # metadata dyal deployment, fih smiya w labels
       name: backend
 spec: # specification dyal deployment, fih replicas w selector w template
-  replicas: 1
+  replicas: 2 
   selector:   #9alb liya 3la label smitha backened bach tkon own l kubernets 
     matchLabels:
         app: backend
@@ -12,6 +12,7 @@ spec: # specification dyal deployment, fih replicas w selector w template
       labels:
         app: backend
     spec: 
+      serviceAccountName: backend-observer
       containers:  # container li ghadi nst3mlo bach ndirou deployement dyal backend
         - name: backend
           image: k8s-demo-shop-backend:latest # image li ghadi nst3mlo bach ndirou deployement dyal backend
@@ -29,6 +30,15 @@ spec: # specification dyal deployment, fih replicas w selector w template
               path: /health
               port: 3001
             initialDelaySeconds: 5
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
           envFrom:
             - configMapRef:
                 name: backend-config

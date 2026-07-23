@@ -1,13 +1,13 @@
 # K8s Demo Shop
 
-A simple full-stack application designed for learning Kubernetes concepts. This project demonstrates containerization, service discovery, and basic microservices architecture.
+A simple full-stack application for learning Kubernetes concepts with a real multi-service setup. This project demonstrates Deployments, Services, ConfigMaps, Secrets, probes, and persistent storage using Redis.
 
 ## Project Architecture
 
 ```
 ┌─────────────┐
 │   Frontend  │ (React + Vite)
-│  Port 3000  │
+│  Port 80    │
 └──────┬──────┘
        │ HTTP
        ▼
@@ -27,71 +27,88 @@ A simple full-stack application designed for learning Kubernetes concepts. This 
 
 ```
 k8s-demo-shop/
-├── frontend/               # React + Vite application
+├── frontend/
 │   ├── src/
-│   │   ├── App.jsx        # Main component
-│   │   ├── App.css        # Styling
-│   │   ├── main.jsx       # Entry point
-│   │   └── index.css      # Global styles
-│   ├── Dockerfile         # Multi-stage build
+│   │   ├── App.jsx
+│   │   ├── App.css
+│   │   ├── main.jsx
+│   │   └── index.css
+│   ├── Dockerfile
+│   ├── nginx.conf
 │   ├── package.json
 │   ├── vite.config.js
 │   └── index.html
-├── backend/                # Node.js + Express server
-│   ├── server.js          # Express application
-│   ├── Dockerfile         # Container image
-│   ├── package.json
-│   └── .dockerignore
-├── docker-compose.yml      # Orchestration for local development
-├── .env.example           # Environment variables template
-└── README.md              # This file
+├── backend/
+│   ├── server.js
+│   ├── Dockerfile
+│   └── package.json
+├── k8s/
+│   ├── deployment-backend.yaml
+│   ├── deployment-frontend.yaml
+│   ├── deployment-redis.yaml
+│   ├── service-backend.yaml
+│   ├── service-frontend.yaml
+│   ├── service-redis.yaml
+│   └── persistent-volume-claim.yaml
+├── configmap.yaml
+├── secret.yaml
+└── README.md
 ```
 
-## Quick Start
+## Kubernetes Quick Start
 
 ### Prerequisites
 
-- Docker & Docker Compose installed
-- Node.js 18+ (optional, for local development)
+- Kubernetes cluster (for example Minikube)
+- kubectl
+- Docker images built and available in your cluster environment
 
-### Running with Docker Compose
+### Apply Resources
 
-```bash
-cd k8s-demo-shop
-docker compose up --build
+```powershell
+kubectl apply -f configmap.yaml
+kubectl apply -f secret.yaml
+kubectl apply -f k8s/persistent-volume-claim.yaml
+kubectl apply -f k8s/deployment-redis.yaml
+kubectl apply -f k8s/service-redis.yaml
+kubectl apply -f k8s/deployment-backend.yaml
+kubectl apply -f k8s/service-backend.yaml
+kubectl apply -f k8s/deployment-frontend.yaml
+kubectl apply -f k8s/service-frontend.yaml
 ```
 
-The application will be available at:
-- **Frontend**: http://localhost:3000
-- **Backend API**: http://localhost:3001
-- **Redis**: localhost:6379
+### Verify
 
-### Running Locally (Development)
+```powershell
+kubectl get pods
+kubectl get svc
+kubectl rollout status deployment/backend
+kubectl rollout status deployment/frontend
+kubectl rollout status deployment/redis
+```
 
-#### Backend
+## Local Development (Optional)
+
+If you want to run the app outside Kubernetes:
+
+### Backend
 ```bash
 cd backend
 npm install
-npm run dev
+npm start
 ```
 
-#### Frontend
+### Frontend
 ```bash
 cd frontend
 npm install
 npm run dev
 ```
 
-You'll need a Redis instance running locally. Start it with:
+Run Redis locally:
+
 ```bash
 docker run -d -p 6379:6379 redis:7-alpine
-```
-
-Then update `.env` or set environment variables:
-```bash
-export REDIS_HOST=localhost
-export REDIS_PORT=6379
-export PORT=3001
 ```
 
 ## API Endpoints
@@ -144,6 +161,61 @@ Health check endpoint.
 ### Frontend
 - `VITE_BACKEND_URL` - Backend API URL (default: http://localhost:3001)
 
+## Accessing The App On Kubernetes
+
+- The frontend and backend Services are `NodePort`.
+- To open in Minikube:
+
+```powershell
+minikube service frontend-service
+```
+
+## Kubernetes Notes
+
+- Backend deployment includes liveness and readiness probes using `/health` on port `3001`.
+- Redis deployment uses a PVC from `k8s/persistent-volume-claim.yaml`.
+- The PVC name currently used by Redis deployment is `myredis-pvc`.
+
+## Common Errors And Fixes
+
+### 1) unknown field envFrom name
+Cause: wrong nesting under `envFrom`.
+
+Correct format:
+
+```yaml
+envFrom:
+  - configMapRef:
+      name: backend-config
+  - secretRef:
+      name: backend-secret
+```
+
+### 2) unknown field resource
+Cause: using `resource` instead of `resources` in container spec.
+
+Correct key:
+
+```yaml
+resources:
+  requests:
+    cpu: "250m"
+    memory: "256Mi"
+  limits:
+    cpu: "500m"
+    memory: "512Mi"
+```
+
+### 3) unknown field containers[0].volumes
+Cause: `volumes` placed inside a container block.
+
+Fix: keep `volumeMounts` under container, and move `volumes` to `spec.template.spec` level.
+
+### 4) redis pod Pending because pvc not found
+Cause: mismatch between PVC metadata name and `claimName`.
+
+Fix: ensure `claimName` in Redis deployment matches PVC metadata name exactly.
+
 ## Features
 
 ### Frontend
@@ -164,29 +236,17 @@ Health check endpoint.
 - CORS enabled
 - Environment-based configuration
 
-## Docker Compose Overview
-
-The `docker-compose.yml` file orchestrates three services:
-
-1. **Redis**: In-memory data store for visit counter
-2. **Backend**: Node.js API server
-3. **Frontend**: React web application
-
-Services communicate via a custom Docker network (`k8s-demo-network`).
-
-Health checks ensure services are ready before dependent services start.
-
 ## Ports
 
 | Service  | Port | Purpose |
 |----------|------|---------|
-| Frontend | 3000 | Web UI |
+| Frontend | 80   | Web UI (inside cluster/service port) |
 | Backend  | 3001 | REST API |
 | Redis    | 6379 | Data store |
 
-## Next Steps - Kubernetes
+## Next Steps
 
-This application is designed to prepare you for deploying to Kubernetes. You'll manually create:
+Useful improvements to continue learning:
 
 - **Deployment manifests** - Pod specifications and replicas
 - **Service manifests** - Internal and external networking
@@ -195,21 +255,12 @@ This application is designed to prepare you for deploying to Kubernetes. You'll 
 - **Persistent Volumes** - Redis data persistence
 - **Ingress** - External HTTP routing
 
-Each Kubernetes resource will help you understand core concepts like:
+These resources help you practice core concepts like:
 - Container orchestration
 - Service discovery
 - Configuration management
 - Networking policies
 - State persistence
-
-## Code Quality
-
-- Clean, minimal comments
-- Environment variable configuration
-- Proper error handling
-- Production-ready multi-stage Docker builds
-- Health checks for all services
-- CORS properly configured
 
 ## License
 
