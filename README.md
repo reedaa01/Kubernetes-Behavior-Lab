@@ -1,26 +1,39 @@
-# K8s Demo Shop
+# Kubernetes Behavior Lab
 
-A simple full-stack application for learning Kubernetes concepts with a real multi-service setup. This project demonstrates Deployments, Services, ConfigMaps, Secrets, probes, and persistent storage using Redis.
+A hands-on Kubernetes observability lab built with a real multi-service stack. Visualize live pod behavior, HPA scaling events, per-pod CPU/memory usage, and replica changes — all from a browser dashboard backed by the Kubernetes API.
 
-## Project Architecture
+## What This Lab Does
+
+- **Live cluster dashboard** — HPA status, replica overview, and per-pod CPU/memory updated every 2 seconds
+- **Traffic generator** — fire configurable bursts of requests at the backend to trigger HPA scale-up
+- **Pod tracking** — every response shows which exact pod served it (via `POD_NAME` downward API)
+- **Visit counter** — Redis-backed counter shared across all backend replicas
+- **In-cluster introspection** — backend reads the Kubernetes API using a least-privilege service account
+
+## Architecture
 
 ```
-┌─────────────┐
-│   Frontend  │ (React + Vite)
-│  Port 80    │
-└──────┬──────┘
-       │ HTTP
-       ▼
-┌─────────────┐
-│   Backend   │ (Node.js + Express)
-│  Port 3001  │
-└──────┬──────┘
-       │ TCP
-       ▼
-┌─────────────┐
-│    Redis    │ (Cache & Counter)
-│  Port 6379  │
-└─────────────┘
+┌─────────────────┐
+│    Frontend     │  React + Vite → Nginx (port 80)
+│  Lab Dashboard  │  polls /lab/cluster every 2s
+└────────┬────────┘
+         │ HTTP (Nginx proxy)
+         ▼
+┌─────────────────┐
+│    Backend      │  Node.js + Express (port 3001)
+│  Lab API        │  reads Kubernetes API in-cluster
+└────────┬────────┘
+         │ TCP
+         ▼
+┌─────────────────┐
+│     Redis       │  visit counter + cache (port 6379)
+└─────────────────┘
+         │
+         ▼
+┌─────────────────┐
+│  Kubernetes API │  pods / deployments / HPA / metrics
+│  (in-cluster)   │  accessed via backend-observer SA
+└─────────────────┘
 ```
 
 ## Folder Structure
@@ -29,7 +42,7 @@ A simple full-stack application for learning Kubernetes concepts with a real mul
 k8s-demo-shop/
 ├── frontend/
 │   ├── src/
-│   │   ├── App.jsx
+│   │   ├── App.jsx          # Lab dashboard with cluster panels
 │   │   ├── App.css
 │   │   ├── main.jsx
 │   │   └── index.css
@@ -39,7 +52,7 @@ k8s-demo-shop/
 │   ├── vite.config.js
 │   └── index.html
 ├── backend/
-│   ├── server.js
+│   ├── server.js            # Express API + cluster introspection
 │   ├── Dockerfile
 │   └── package.json
 ├── k8s/
@@ -49,6 +62,8 @@ k8s-demo-shop/
 │   ├── service-backend.yaml
 │   ├── service-frontend.yaml
 │   ├── service-redis.yaml
+│   ├── hpa-backend.yaml
+│   ├── rbac-backend-observer.yaml   # ServiceAccount + Role + RoleBinding
 │   └── persistent-volume-claim.yaml
 ├── configmap.yaml
 ├── secret.yaml
@@ -59,11 +74,29 @@ k8s-demo-shop/
 
 ### Prerequisites
 
-- Kubernetes cluster (for example Minikube)
-- kubectl
-- Docker images built and available in your cluster environment
+- Minikube (with metrics-server enabled) or any Kubernetes cluster
+- kubectl configured
+- Docker
 
-### Apply Resources
+### Enable Metrics Server (Minikube)
+
+```powershell
+minikube addons enable metrics-server
+```
+
+### Build and Load Images
+
+```powershell
+# Build
+docker build -t k8s-demo-shop-backend:latest ./backend
+docker build -t k8s-demo-shop-frontend:proxy-v1 ./frontend
+
+# Load into Minikube
+minikube image load k8s-demo-shop-backend:latest
+minikube image load k8s-demo-shop-frontend:proxy-v1
+```
+
+### Apply All Resources
 
 ```powershell
 kubectl apply -f configmap.yaml
@@ -71,196 +104,188 @@ kubectl apply -f secret.yaml
 kubectl apply -f k8s/persistent-volume-claim.yaml
 kubectl apply -f k8s/deployment-redis.yaml
 kubectl apply -f k8s/service-redis.yaml
+kubectl apply -f k8s/rbac-backend-observer.yaml
 kubectl apply -f k8s/deployment-backend.yaml
 kubectl apply -f k8s/service-backend.yaml
 kubectl apply -f k8s/deployment-frontend.yaml
 kubectl apply -f k8s/service-frontend.yaml
+kubectl apply -f k8s/hpa-backend.yaml
 ```
 
 ### Verify
 
 ```powershell
 kubectl get pods
-kubectl get svc
+kubectl get hpa
 kubectl rollout status deployment/backend
 kubectl rollout status deployment/frontend
-kubectl rollout status deployment/redis
 ```
 
-## Local Development (Optional)
-
-If you want to run the app outside Kubernetes:
-
-### Backend
-```bash
-cd backend
-npm install
-npm start
-```
-
-### Frontend
-```bash
-cd frontend
-npm install
-npm run dev
-```
-
-Run Redis locally:
-
-```bash
-docker run -d -p 6379:6379 redis:7-alpine
-```
-
-## API Endpoints
-
-### GET /
-Returns application status and metrics.
-
-**Response:**
-```json
-{
-  "message": "Hello from Kubernetes",
-  "hostname": "container-id-or-hostname",
-  "visits": 123,
-  "time": "2024-01-15T10:30:45.123Z"
-}
-```
-
-### GET /info
-Returns detailed application information including pod name, IP, and version.
-
-**Response:**
-```json
-{
-  "hostname": "container-id-or-hostname",
-  "pod": "container-id-or-hostname",
-  "ip": "172.17.0.3",
-  "visits": 123,
-  "version": "1.0.0",
-  "time": "2024-01-15T10:30:45.123Z"
-}
-```
-
-### GET /health
-Health check endpoint.
-
-**Response:**
-```json
-{
-  "status": "healthy"
-}
-```
-
-## Environment Variables
-
-### Backend
-- `PORT` - Server port (default: 3001)
-- `REDIS_HOST` - Redis hostname (default: localhost)
-- `REDIS_PORT` - Redis port (default: 6379)
-
-### Frontend
-- `VITE_BACKEND_URL` - Backend API URL (default: http://localhost:3001)
-
-## Accessing The App On Kubernetes
-
-- The frontend and backend Services are `NodePort`.
-- To open in Minikube:
+### Open the Lab
 
 ```powershell
 minikube service frontend-service
 ```
 
-## Kubernetes Notes
-
-- Backend deployment includes liveness and readiness probes using `/health` on port `3001`.
-- Redis deployment uses a PVC from `k8s/persistent-volume-claim.yaml`.
-- The PVC name currently used by Redis deployment is `myredis-pvc`.
-
-## Common Errors And Fixes
-
-### 1) unknown field envFrom name
-Cause: wrong nesting under `envFrom`.
-
-Correct format:
-
-```yaml
-envFrom:
-  - configMapRef:
-      name: backend-config
-  - secretRef:
-      name: backend-secret
-```
-
-### 2) unknown field resource
-Cause: using `resource` instead of `resources` in container spec.
-
-Correct key:
-
-```yaml
-resources:
-  requests:
-    cpu: "250m"
-    memory: "256Mi"
-  limits:
-    cpu: "500m"
-    memory: "512Mi"
-```
-
-### 3) unknown field containers[0].volumes
-Cause: `volumes` placed inside a container block.
-
-Fix: keep `volumeMounts` under container, and move `volumes` to `spec.template.spec` level.
-
-### 4) redis pod Pending because pvc not found
-Cause: mismatch between PVC metadata name and `claimName`.
-
-Fix: ensure `claimName` in Redis deployment matches PVC metadata name exactly.
-
-## Features
-
-### Frontend
-- Real-time metrics display
-- Auto-refresh every 2 seconds
-- Backend status indicator
-- Container hostname display
-- Visit counter
-- Server time display
-- Responsive design
-- Modern gradient UI
+## Local Development
 
 ### Backend
-- Express.js REST API
-- Redis integration for persistent counter
-- Health check endpoint
-- Container hostname reporting
-- CORS enabled
-- Environment-based configuration
+
+```powershell
+cd backend
+npm install
+npm run dev   # nodemon on port 3001
+```
+
+### Frontend
+
+```powershell
+cd frontend
+npm install
+npm run dev   # Vite on port 5173
+```
+
+### Redis (local)
+
+```powershell
+docker run -d -p 6379:6379 redis:7-alpine
+```
+
+> In local dev, `POD_NAME` falls back to `"local-dev"` and `/lab/cluster` uses `kubectl` instead of the in-cluster API.
+
+## API Endpoints
+
+### GET /
+Returns visit count and which pod served the request.
+
+```json
+{
+  "message": "Hello from Kubernetes",
+  "hostname": "backend-6ddcfdd9b5-gjg2g",
+  "visits": 42,
+  "time": "2026-07-23T10:30:45.123Z"
+}
+```
+
+### GET /info
+Returns detailed pod identity information.
+
+```json
+{
+  "hostname": "backend-6ddcfdd9b5-gjg2g",
+  "pod": "backend-6ddcfdd9b5-gjg2g",
+  "ip": "172.17.0.3",
+  "visits": 42,
+  "version": "1.0.0",
+  "time": "2026-07-23T10:30:45.123Z"
+}
+```
+
+### GET /lab/cluster
+Returns a live snapshot of the cluster: deployments, HPA, and per-pod CPU/memory.
+
+```json
+{
+  "namespace": "default",
+  "source": "kube-api",
+  "replicas": [
+    { "name": "backend",  "desired": 2, "current": 2, "ready": 2 },
+    { "name": "frontend", "desired": 2, "current": 2, "ready": 2 },
+    { "name": "redis",    "desired": 1, "current": 1, "ready": 1 }
+  ],
+  "hpa": {
+    "name": "backend-hpa",
+    "minReplicas": 1, "maxReplicas": 5,
+    "currentReplicas": 2, "desiredReplicas": 2,
+    "currentCpuUtilization": 63,
+    "currentCpuValue": "158m",
+    "targetCpuUtilization": 50
+  },
+  "pods": [
+    { "name": "backend-abc-1", "app": "backend", "cpuMillicores": 80, "memoryMiB": 28, "ready": true },
+    { "name": "backend-abc-2", "app": "backend", "cpuMillicores": 78, "memoryMiB": 27, "ready": true },
+    { "name": "frontend-xyz",  "app": "frontend", "cpuMillicores": 1,  "memoryMiB": 7,  "ready": true },
+    { "name": "redis-xyz",     "app": "redis",    "cpuMillicores": 7,  "memoryMiB": 3,  "ready": true }
+  ]
+}
+```
+
+### GET /health
+Liveness/readiness probe endpoint.
+
+```json
+{ "status": "healthy" }
+```
+
+## RBAC — backend-observer
+
+The backend reads the Kubernetes API using a dedicated least-privilege service account defined in `k8s/rbac-backend-observer.yaml`:
+
+| Resource | API Group | Verbs |
+|----------|-----------|-------|
+| pods | core | get, list, watch |
+| deployments | apps | get, list, watch |
+| horizontalpodautoscalers | autoscaling | get, list, watch |
+| pods (metrics) | metrics.k8s.io | get, list |
+
+The backend deployment binds to this service account and receives `POD_NAME` and `POD_NAMESPACE` via the downward API.
+
+## Environment Variables
+
+### Backend
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `PORT` | `3001` | Express listen port |
+| `REDIS_HOST` | `localhost` | Redis hostname |
+| `REDIS_PORT` | `6379` | Redis port |
+| `POD_NAME` | `local-dev` | Injected by downward API in cluster |
+| `POD_NAMESPACE` | `default` | Injected by downward API in cluster |
+
+### Frontend
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `VITE_BACKEND_URL` | `http://localhost:3001` | Backend API base URL |
+
+## HPA Behavior
+
+The HPA (`k8s/hpa-backend.yaml`) targets the `backend` deployment:
+
+- **CPU target**: 50%
+- **Min replicas**: 1
+- **Max replicas**: 5
+
+To watch it in real time:
+
+```powershell
+kubectl get hpa -w
+```
+
+Use the traffic generator in the lab UI to push CPU above 50% and watch the dashboard scale up.
 
 ## Ports
 
-| Service  | Port | Purpose |
-|----------|------|---------|
-| Frontend | 80   | Web UI (inside cluster/service port) |
-| Backend  | 3001 | REST API |
-| Redis    | 6379 | Data store |
+| Service  | Port | Protocol |
+|----------|------|----------|
+| Frontend | 80 | HTTP (Nginx) |
+| Backend  | 3001 | HTTP (Express) |
+| Redis    | 6379 | TCP |
 
-## Next Steps
+## Common Issues
 
-Useful improvements to continue learning:
+### Redis pod Pending — PVC not found
+Ensure `claimName` in `deployment-redis.yaml` matches the `metadata.name` in `persistent-volume-claim.yaml` exactly.
 
-- **Deployment manifests** - Pod specifications and replicas
-- **Service manifests** - Internal and external networking
-- **ConfigMaps** - Environment configuration
-- **Secrets** - Sensitive data management
-- **Persistent Volumes** - Redis data persistence
-- **Ingress** - External HTTP routing
+### /lab/cluster returns 500 locally
+Requires `kubectl` to be installed and your kubeconfig pointing to a running cluster. In pure local dev with no cluster, the endpoint will fail gracefully.
 
-These resources help you practice core concepts like:
-- Container orchestration
-- Service discovery
-- Configuration management
-- Networking policies
-- State persistence
+### HPA shows `<unknown>` CPU
+Metrics server is not running. Enable it:
+```powershell
+minikube addons enable metrics-server
+```
+
+### Backend 403 on /lab/cluster in cluster
+The `rbac-backend-observer.yaml` was not applied, or the deployment is not using `serviceAccountName: backend-observer`. Re-apply both.
 
 ## License
 
