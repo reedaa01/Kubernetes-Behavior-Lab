@@ -386,7 +386,7 @@ app.get('/', async (req, res) => {
     }
     const podName = process.env.POD_NAME || 'local-dev'
     res.json({
-      message: 'Hello from Kubernetes',
+      message: 'Hello from Kubernetes backend v2',
       hostname: podName,
       pod: podName,
       visits: visits,
