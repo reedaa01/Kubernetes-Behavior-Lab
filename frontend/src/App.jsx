@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useRef } from 'react'
+import { useState, useEffect, useMemo, useRef, useCallback } from 'react'
 import axios from 'axios'
 import './App.css'
 
@@ -81,7 +81,7 @@ function App() {
     })
   }
 
-  const fetchInfo = async () => {
+  const fetchInfo = useCallback(async () => {
     try {
       const response = await axios.get(`${backendUrl}/info`)
       const info = response?.data
@@ -97,9 +97,9 @@ function App() {
       setError(err.message)
       return null
     }
-  }
+  }, [backendUrl])
 
-  const fetchLabData = async () => {
+  const fetchLabData = useCallback(async () => {
     try {
       const [configRes, metricsRes, clusterRes] = await Promise.all([
         axios.get(`${backendUrl}/lab/config`),
@@ -107,12 +107,16 @@ function App() {
         axios.get(`${backendUrl}/lab/cluster`),
       ])
       setBackendConfig(configRes.data)
+      setFaultConfig({
+        failureRatePercent: Math.round((configRes.data.failureRate || 0) * 100),
+        artificialDelayMs: configRes.data.artificialDelayMs || 0,
+      })
       setBackendMetrics(metricsRes.data)
       setClusterState(clusterRes.data)
     } catch (err) {
       setError(err.message)
     }
-  }
+  }, [backendUrl])
 
   useEffect(() => {
     const load = async () => {
@@ -123,14 +127,15 @@ function App() {
     load()
     const interval = setInterval(load, 2000)
     return () => clearInterval(interval)
-  }, [])
+  }, [fetchInfo, fetchLabData])
+
+  const [nowTs, setNowTs] = useState(() => Date.now())
 
   useEffect(() => {
-    setFaultConfig({
-      failureRatePercent: Math.round((backendConfig.failureRate || 0) * 100),
-      artificialDelayMs: backendConfig.artificialDelayMs || 0,
-    })
-  }, [backendConfig.failureRate, backendConfig.artificialDelayMs])
+    if (!trafficState.running) return
+    const id = setInterval(() => setNowTs(Date.now()), 500)
+    return () => clearInterval(id)
+  }, [trafficState.running])
 
   useEffect(() => {
     return () => {
@@ -289,7 +294,7 @@ function App() {
     : '0.0'
 
   const trafficDurationSeconds = trafficState.startedAt
-    ? Math.round(((trafficState.endedAt || Date.now()) - trafficState.startedAt) / 1000)
+    ? Math.round(((trafficState.endedAt || nowTs) - trafficState.startedAt) / 1000)
     : 0
 
   const clusterPods = clusterState?.pods || []

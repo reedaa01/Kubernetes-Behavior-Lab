@@ -1,7 +1,6 @@
 import express from 'express'
 import cors from 'cors'
 import { createClient } from 'redis'
-import os from 'os'
 import { networkInterfaces } from 'os'
 import { execFile } from 'node:child_process'
 import { promisify } from 'node:util'
@@ -37,9 +36,9 @@ let requestMetrics = {
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 
-const clamp = (value, min, max) => Math.min(Math.max(value, min), max)
+export const clamp = (value, min, max) => Math.min(Math.max(value, min), max)
 
-const safeJsonParse = (value, fallback = null) => {
+export const safeJsonParse = (value, fallback = null) => {
   try {
     return JSON.parse(value)
   } catch {
@@ -47,7 +46,7 @@ const safeJsonParse = (value, fallback = null) => {
   }
 }
 
-const parseCpuToMillicores = (value) => {
+export const parseCpuToMillicores = (value) => {
   if (!value) {
     return 0
   }
@@ -63,7 +62,7 @@ const parseCpuToMillicores = (value) => {
   return Number(value) * 1000
 }
 
-const parseMemoryToMiB = (value) => {
+export const parseMemoryToMiB = (value) => {
   if (!value) {
     return 0
   }
@@ -538,10 +537,13 @@ app.post('/lab/reset', async (req, res) => {
   })
 })
 
-initRedis()
+if (process.env.NODE_ENV !== 'test') {
+  initRedis()
+  app.listen(port, () => {
+    console.log(`Backend server running on port ${port}`)
+    console.log(`Redis connection: ${redisHost}:${redisPort}`)
+    console.log(`Redis connected: ${redisConnected}`)
+  })
+}
 
-app.listen(port, () => {
-  console.log(`Backend server running on port ${port}`)
-  console.log(`Redis connection: ${redisHost}:${redisPort}`)
-  console.log(`Redis connected: ${redisConnected}`)
-})
+export { app }
