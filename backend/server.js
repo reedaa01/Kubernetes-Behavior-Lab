@@ -1,5 +1,6 @@
 import express from 'express'
 import cors from 'cors'
+import rateLimit from 'express-rate-limit'
 import { createClient } from 'redis'
 import { networkInterfaces } from 'os'
 import { execFile } from 'node:child_process'
@@ -17,6 +18,28 @@ const kubePort = process.env.KUBERNETES_SERVICE_PORT || '443'
 
 app.use(cors())
 app.use(express.json())
+
+const isTest = process.env.NODE_ENV === 'test'
+
+// General API limiter to reduce abuse risk across all endpoints.
+const generalLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: isTest ? 1_000_000 : 300,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many requests, please try again later.' },
+})
+
+// Stricter limiter for state-changing lab controls.
+const labWriteLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: isTest ? 1_000_000 : 30,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many lab write requests, please try again later.' },
+})
+
+app.use(generalLimiter)
 
 let redis = null
 let redisConnected = false
@@ -432,7 +455,7 @@ app.get('/lab/config', (req, res) => {
   })
 })
 
-app.post('/lab/config', (req, res) => {
+app.post('/lab/config', labWriteLimiter, (req, res) => {
   const failureRateInput = req.body?.failureRate
   const artificialDelayInput = req.body?.artificialDelayMs
 
@@ -511,7 +534,7 @@ app.get('/lab/cluster', async (req, res) => {
   }
 })
 
-app.post('/lab/reset', async (req, res) => {
+app.post('/lab/reset', labWriteLimiter, async (req, res) => {
   const resetVisits = Boolean(req.body?.resetVisits)
 
   requestMetrics = {
