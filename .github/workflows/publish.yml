@@ -19,3 +19,6 @@ jobs:
               uses: azure/login@v2
               with:
                  creds: ${{ secrets.AZURE_CREDENTIALS }}
+            - name: Login to azure container Registry
+              run: 
+                az acr login --name ${{secrets.ACR_NAME}}
