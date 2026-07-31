@@ -1,4 +1,4 @@
-# Kubernetes Behavior Lab
+# Kubernetes Behavior Lab v1
 
 A hands-on Kubernetes observability lab built with a real multi-service stack. Visualize live pod behavior, HPA scaling events, per-pod CPU/memory usage, and replica changes — all from a browser dashboard backed by the Kubernetes API.
 
