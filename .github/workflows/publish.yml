@@ -26,3 +26,7 @@ jobs:
               run: docker build -t ${{ secrets.ACR_NAME }}.azurecr.io/backend:${{ github.sha }} ./backend
             - name: Push Backend Image
               run: docker push ${{ secrets.ACR_NAME }}.azurecr.io/backend:${{ github.sha }}
+            - name: Build Frontend Image
+              run: docker build -t ${{ secrets.ACR_NAME }}.azurecr.io/frontend:${{ github.sha }} ./frontend
+            - name: Push Frontend Image
+              run: docker push ${{ secrets.ACR_NAME }}.azurecr.io/frontend:${{ github.sha }}
