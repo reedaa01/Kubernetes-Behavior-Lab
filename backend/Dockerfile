@@ -1,10 +1,7 @@
-FROM node:22-bookworm-slim
+FROM node:22-bookworm-slim AS deps
 
 WORKDIR /app
 ENV NODE_ENV=production
-
-# Refresh Alpine packages and install only production dependencies.
-RUN apk update && apk upgrade --no-cache
 
 COPY package*.json ./
 RUN npm ci --omit=dev --no-audit --no-fund \
@@ -12,12 +9,14 @@ RUN npm ci --omit=dev --no-audit --no-fund \
 
 COPY . .
 
-FROM gcr.io/distroless/nodejs22-debian12:nonroot
+FROM node:22-bookworm-slim
 
 WORKDIR /app
 ENV NODE_ENV=production
 
 COPY --from=deps /app /app
 
+USER node
+
 EXPOSE 3001
-CMD ["server.js"]
+CMD ["node", "server.js"]
