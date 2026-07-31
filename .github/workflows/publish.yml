@@ -22,3 +22,8 @@ jobs:
             - name: Login to azure container Registry
               run: 
                 az acr login --name ${{secrets.ACR_NAME}}
+            - name: Build Backend Image
+              run: 
+                docker build \
+                  -it ${{ secrets.ACR_NAME }}.azurecr.io/backend:${{ github.sha }} \
+                  ./backend
