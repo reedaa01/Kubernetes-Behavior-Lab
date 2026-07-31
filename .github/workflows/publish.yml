@@ -6,3 +6,11 @@ on:
     types:
       - completed
 
+jobs:
+    publish:
+        name: Publish Images
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Workflow Started
+              run: echo "Publish workflows triggered successfully" 
