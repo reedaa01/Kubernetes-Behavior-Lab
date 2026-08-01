@@ -3,5 +3,6 @@ kind: Ingress
 metadata:
   name: {{ .Values.ingressCustom.name }}
 spec:
+  ingressClassName: nginx
   rules:
     {{- toYaml .Values.ingressCustom.rules | nindent 4 }}
