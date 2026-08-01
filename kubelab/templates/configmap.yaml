@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Values.backend.config.name }}
+data:
+   PORT: {{ .Values.backend.config.data.port | quote }}
+   REDIS_HOST: {{ .Values.backend.config.data.redisHost | quote }}
+   REDIS_PORT: {{ .Values.backend.config.data.redisPort | quote }}

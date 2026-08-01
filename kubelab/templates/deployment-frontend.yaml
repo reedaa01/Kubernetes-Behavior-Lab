@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.frontend.name }}
+spec:
+  replicas: {{ .Values.frontend.replicas }}
+  selector:
+    matchLabels:
+      app: {{ .Values.frontend.labels.app }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.frontend.labels.app }}
+    spec:
+      containers:
+        - name: {{ .Values.frontend.containerName }}
+          image: {{ .Values.frontend.image.repository }}:{{ .Values.frontend.image.tag }}
+          imagePullPolicy: {{ .Values.frontend.image.pullPolicy }}
+          ports:
+            - containerPort: {{ .Values.frontend.containerPort }}
+          livenessProbe:
+            httpGet:
+              path: {{ .Values.frontend.livenessProbe.path }}
+              port: {{ .Values.frontend.livenessProbe.port }}
+            initialDelaySeconds: {{ .Values.frontend.livenessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.frontend.livenessProbe.periodSeconds }}
+          readinessProbe:
+            httpGet:
+              path: {{ .Values.frontend.readinessProbe.path }}
+              port: {{ .Values.frontend.readinessProbe.port }}
+            initialDelaySeconds: {{ .Values.frontend.readinessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.frontend.readinessProbe.periodSeconds }}
+          resources:
+            requests:
+              cpu: {{ .Values.frontend.resources.requests.cpu | quote }}
+              memory: {{ .Values.frontend.resources.requests.memory | quote }}
+            limits:
+              cpu: {{ .Values.frontend.resources.limits.cpu | quote }}
+              memory: {{ .Values.frontend.resources.limits.memory | quote }}

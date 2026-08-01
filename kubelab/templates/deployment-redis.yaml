@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.redis.name }}
+spec:
+  replicas: {{ .Values.redis.replicas }}
+  selector:
+    matchLabels:
+      app: {{ .Values.redis.labels.app }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.redis.labels.app }}
+    spec:
+      containers:
+        - name: {{ .Values.redis.containerName }}
+          image: {{ .Values.redis.image.repository }}:{{ .Values.redis.image.tag }}
+          imagePullPolicy: {{ .Values.redis.image.pullPolicy }}
+          ports:
+            - containerPort: {{ .Values.redis.containerPort }}
+          volumeMounts:
+            - name: {{ .Values.redis.volumeMount.name }}
+              mountPath: {{ .Values.redis.volumeMount.mountPath }}
+      volumes:
+        - name: {{ .Values.redis.volume.name }}
+          persistentVolumeClaim:
+            claimName: {{ .Values.redis.volume.claimName }}

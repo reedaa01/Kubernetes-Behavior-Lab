@@ -118,6 +118,7 @@ resources: {}
   # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
   # limits:
   #   cpu: 100m
+
   #   memory: 128Mi
   # requests:
   #   cpu: 100m
@@ -159,3 +160,215 @@ nodeSelector: {}
 tolerations: []
 
 affinity: {}
+##############################################################
+backend:
+  name: backend
+
+  replicas: 2
+
+  labels:
+    app: backend
+
+  containerName: backend
+
+  image:
+    repository: ridakubelabacr.azurecr.io/backend
+    tag: latest
+    pullPolicy: IfNotPresent
+
+  containerPort: 3001
+
+  serviceAccountName: backend-observer
+
+  service:
+    name: backend-service
+    type: ClusterIP
+    port: 80
+    targetPort: 3001
+
+  livenessProbe:
+    path: /health
+    port: 3001
+    initialDelaySeconds: 10
+    periodSeconds: 10
+
+  readinessProbe:
+    path: /health
+    port: 3001
+    initialDelaySeconds: 5
+
+  envFrom:
+    configMapName: backend-config
+    secretName: backend-secret
+
+  secret:
+    name: backend-secret
+    type: Opaque
+    stringData:
+      dbUser: admin
+      dbPassword: SuperSecret123
+      jwtSerect: myse
+
+  config:
+    name: backend-config
+    data:
+      port: "3001"
+      redisHost: "redis"
+      redisPort: "6379"
+
+  resources:
+    requests:
+      cpu: "250m"
+      memory: "256Mi"
+    limits:
+      cpu: "500m"
+      memory: "512Mi"
+
+  hpa:
+    name: backend-hpa
+    scaleTargetName: backend
+    minReplicas: 1
+    maxReplicas: 5
+    targetCPUUtilizationPercentage: 50
+
+  rbac:
+    roleName: backend-observer
+    roleBindingName: backend-observer
+    rules:
+      - apiGroups: [""]
+        resources: ["pods"]
+        verbs: ["get", "list", "watch"]
+      - apiGroups: ["apps"]
+        resources: ["deployments"]
+        verbs: ["get", "list", "watch"]
+      - apiGroups: ["autoscaling"]
+        resources: ["horizontalpodautoscalers"]
+        verbs: ["get", "list", "watch"]
+      - apiGroups: ["metrics.k8s.io"]
+        resources: ["pods"]
+        verbs: ["get", "list", "watch"]
+    roleRef:
+      apiGroup: rbac.authorization.k8s.io
+      kind: Role
+      name: backend-observer
+####################################################################
+frontend:
+  name: frontend
+
+  replicas: 1
+
+  labels:
+    app: frontend
+
+  containerName: frontend
+
+  image:
+    repository: ridakubelabacr.azurecr.io/frontend
+    tag: latest
+    pullPolicy: IfNotPresent
+
+  containerPort: 80
+
+  livenessProbe:
+    path: /
+    port: 80
+    initialDelaySeconds: 10
+    periodSeconds: 10
+
+  readinessProbe:
+    path: /
+    port: 80
+    initialDelaySeconds: 5
+    periodSeconds: 10
+
+  resources:
+    requests:
+      cpu: "100m"
+      memory: "128Mi"
+    limits:
+      cpu: "300m"
+      memory: "256Mi"
+
+  service:
+    name: frontend-service
+    type: ClusterIP
+    port: 80
+    targetPort: 80
+#################################################
+redis:
+  name: redis
+
+  replicas: 1
+
+  labels:
+    app: redis
+
+  containerName: redis
+
+  image:
+    repository: redis
+    tag: 7-alpine
+    pullPolicy: IfNotPresent
+
+  containerPort: 6379
+
+  volumeMount:
+    name: redis-storage
+    mountPath: /data
+
+  volume:
+    name: redis-storage
+    claimName: myredis-pvc
+
+  service:
+    name: redis
+    type: ClusterIP
+    port: 6379
+    targetPort: 6379
+
+  pvc:
+    name: myredis-pvc
+    accessMode: ReadWriteOnce
+    storage: 2Gi
+
+ingressCustom:
+  name: kubelab-ingress
+  rules:
+    - host: kubelab.local
+      http:
+        paths:
+          - path: /info
+            pathType: Prefix
+            backend:
+              service:
+                name: backend-service
+                port:
+                  number: 80
+          - path: /health
+            pathType: Prefix
+            backend:
+              service:
+                name: backend-service
+                port:
+                  number: 80
+          - path: /lab
+            pathType: Prefix
+            backend:
+              service:
+                name: backend-service
+                port:
+                  number: 80
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: frontend-service
+                port:
+                  number: 80
+          - path: /api
+            pathType: Prefix
+            backend:
+              service:
+                name: backend-service
+                port:
+                  number: 80

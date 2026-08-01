@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.backend.name }}
+spec:
+  replicas: {{ .Values.backend.replicas }}
+  selector:
+    matchLabels:
+      app: {{ .Values.backend.labels.app }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.backend.labels.app }}
+    spec:
+      serviceAccountName: {{ .Values.backend.serviceAccountName }}
+      containers:
+        - name: {{ .Values.backend.containerName }}
+          image: "{{ .Values.backend.image.repository }}:{{ .Values.backend.image.tag }}"
+          imagePullPolicy: {{ .Values.backend.image.pullPolicy }}
+          ports:
+            - containerPort: {{ .Values.backend.containerPort }}
+          livenessProbe:
+            httpGet:
+              path: {{ .Values.backend.livenessProbe.path }}
+              port: {{ .Values.backend.livenessProbe.port }}
+            initialDelaySeconds: {{ .Values.backend.livenessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.backend.livenessProbe.periodSeconds }}
+          readinessProbe:
+            httpGet:
+              path: {{ .Values.backend.readinessProbe.path }}
+              port: {{ .Values.backend.readinessProbe.port }}
+            initialDelaySeconds: {{ .Values.backend.readinessProbe.initialDelaySeconds }}
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+          envFrom:
+            - configMapRef:
+                name: {{ .Values.backend.envFrom.configMapName }}
+            - secretRef:
+                name: {{ .Values.backend.envFrom.secretName }}
+          resources:
+            requests:
+              cpu: {{ .Values.backend.resources.requests.cpu | quote }}
+              memory: {{ .Values.backend.resources.requests.memory | quote }}
+            limits:
+              cpu: {{ .Values.backend.resources.limits.cpu | quote }}
+              memory: {{ .Values.backend.resources.limits.memory | quote }}
