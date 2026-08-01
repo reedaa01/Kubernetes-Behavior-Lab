@@ -136,7 +136,7 @@ readinessProbe:
 
 # This section is for setting up autoscaling more information can be found here: https://kubernetes.io/docs/concepts/workloads/autoscaling/
 autoscaling:
-  enabled: false
+  enabled: true
   minReplicas: 1
   maxReplicas: 100
   targetCPUUtilizationPercentage: 80
@@ -164,7 +164,7 @@ affinity: {}
 backend:
   name: backend
 
-  replicas: 2
+  replicaCount: 2
 
   labels:
     app: backend

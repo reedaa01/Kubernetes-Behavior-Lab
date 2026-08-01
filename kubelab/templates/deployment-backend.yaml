@@ -3,7 +3,9 @@ kind: Deployment
 metadata:
   name: {{ .Values.backend.name }}
 spec:
-  replicas: {{ .Values.backend.replicas }}
+{{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.backend.replicaCount }}
+{{- end }}
   selector:
     matchLabels:
       app: {{ .Values.backend.labels.app }}
