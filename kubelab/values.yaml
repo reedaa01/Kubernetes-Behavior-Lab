@@ -173,7 +173,7 @@ backend:
 
   image:
     repository: ridakubelabacr.azurecr.io/backend
-    tag: latest
+    tag: 6f1d04c7a3bd1bd4be44fa95f29251f239e3a5fd
     pullPolicy: IfNotPresent
 
   containerPort: 3001
@@ -264,7 +264,7 @@ frontend:
 
   image:
     repository: ridakubelabacr.azurecr.io/frontend
-    tag: latest
+    tag: 6f1d04c7a3bd1bd4be44fa95f29251f239e3a5fd
     pullPolicy: IfNotPresent
 
   containerPort: 80
