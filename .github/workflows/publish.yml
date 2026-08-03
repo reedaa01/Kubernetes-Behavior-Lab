@@ -55,4 +55,5 @@ jobs:
 
           git diff --cached --quiet || git commit -m "chore: update image tags to ${{ github.event.workflow_run.head_sha }}"
 
-          git push
+          git pull --rebase origin main
+          git push origin HEAD:main
