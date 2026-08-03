@@ -334,8 +334,7 @@ redis:
 ingressCustom:
   name: kubelab-ingress
   rules:
-    - host: coupleshere.online
-      http:
+    - http:
         paths:
           - path: /info
             pathType: Prefix

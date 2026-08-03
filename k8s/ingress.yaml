@@ -3,9 +3,9 @@ kind: Ingress
 metadata: 
     name: kubelab-ingress
 spec:
+  ingressClassName: nginx
   rules:
-    - host: kubelab.local
-      http:
+    - http:
         paths:
           - path: /info
             pathType: Prefix
