@@ -75,7 +75,7 @@ afterEach(() => {
 describe('App — initial render', () => {
   it('renders the page heading', () => {
     render(<App />)
-    expect(screen.getByText('Kubernetes Behavior Lab')).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: /Kubernetes Behavior Lab/i })).toBeInTheDocument()
   })
 
   it('shows Loading status before first fetch completes', () => {
