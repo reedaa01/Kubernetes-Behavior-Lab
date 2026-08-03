@@ -218,7 +218,12 @@ const aggregatePodUsage = (metricItem) => {
 
 const buildClusterSnapshot = ({ pods, deployments, hpa, podMetrics }) => {
   const relevantDeployments = ['backend', 'frontend', 'redis']
-  const deploymentMap = new Map((deployments.items || []).map((deployment) => [deployment.metadata?.name, deployment]))
+  const deploymentMap = new Map((deployments.items || []).flatMap((deployment) => {
+    const deploymentName = deployment.metadata?.name
+    const deploymentApp = deployment.metadata?.labels?.app
+
+    return [deploymentName, deploymentApp].filter(Boolean).map((key) => [key, deployment])
+  }))
   const podMetricsMap = new Map((podMetrics.items || []).map((item) => [item.metadata?.name, aggregatePodUsage(item)]))
 
   const podRows = (pods.items || [])
