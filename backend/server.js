@@ -221,6 +221,8 @@ const buildClusterSnapshot = ({ pods, deployments, hpa, podMetrics }) => {
   const deploymentMap = new Map((deployments.items || []).flatMap((deployment) => {
     const deploymentName = deployment.metadata?.name
     const deploymentApp = deployment.metadata?.labels?.app
+      || deployment.spec?.selector?.matchLabels?.app
+      || deployment.spec?.template?.metadata?.labels?.app
 
     return [deploymentName, deploymentApp].filter(Boolean).map((key) => [key, deployment])
   }))
