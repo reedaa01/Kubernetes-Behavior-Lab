@@ -3,6 +3,7 @@ kind: Deployment
 metadata:
   name: {{ include "kubelab.backend.fullname" . }}
 spec:
+  revisionHistoryLimit: 2
 {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.backend.replicaCount }}
 {{- end }}

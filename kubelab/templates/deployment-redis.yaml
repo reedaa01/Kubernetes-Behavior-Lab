@@ -3,6 +3,7 @@ kind: Deployment
 metadata:
   name: {{ .Values.redis.name }}
 spec:
+  revisionHistoryLimit: 2
   replicas: {{ .Values.redis.replicas }}
   selector:
     matchLabels:
