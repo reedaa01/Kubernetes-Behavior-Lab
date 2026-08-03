@@ -14,7 +14,11 @@ spec:
     spec:
       containers:
         - name: {{ .Values.frontend.containerName }}
-          image: {{ .Values.frontend.image.repository }}:{{ .Values.frontend.image.tag }}
+          {{- if .Values.frontend.image.tag }}
+          image: "{{ .Values.frontend.image.repository }}:{{ .Values.frontend.image.tag }}"
+          {{- else }}
+          image: "{{ .Values.frontend.image.repository }}"
+          {{- end }}
           imagePullPolicy: {{ .Values.frontend.image.pullPolicy }}
           ports:
             - containerPort: {{ .Values.frontend.containerPort }}

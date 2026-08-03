@@ -14,7 +14,11 @@ spec:
     spec:
       containers:
         - name: {{ .Values.redis.containerName }}
-          image: {{ .Values.redis.image.repository }}:{{ .Values.redis.image.tag }}
+          {{- if .Values.redis.image.tag }}
+          image: "{{ .Values.redis.image.repository }}:{{ .Values.redis.image.tag }}"
+          {{- else }}
+          image: "{{ .Values.redis.image.repository }}"
+          {{- end }}
           imagePullPolicy: {{ .Values.redis.image.pullPolicy }}
           ports:
             - containerPort: {{ .Values.redis.containerPort }}
