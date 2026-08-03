@@ -60,3 +60,10 @@ Create the name of the service account to use
 {{- default "default" .Values.serviceAccount.name }}
 {{- end }}
 {{- end }}
+
+{{/*
+Create a fullname for the backend workload.
+*/}}
+{{- define "kubelab.backend.fullname" -}}
+{{- printf "%s-%s" (include "kubelab.fullname" .) .Values.backend.name | trunc 63 | trimSuffix "-" }}
+{{- end }}

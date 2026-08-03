@@ -6,7 +6,7 @@ spec:
   scaleTargetRef:
     apiVersion: apps/v1
     kind: Deployment
-    name: {{ .Values.backend.hpa.scaleTargetName }}
+    name: {{ include "kubelab.backend.fullname" . }}
 
   minReplicas: {{ .Values.backend.hpa.minReplicas }}
   maxReplicas: {{ .Values.backend.hpa.maxReplicas }}

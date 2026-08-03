@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ .Values.backend.name }}
+  name: {{ include "kubelab.backend.fullname" . }}
 spec:
 {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.backend.replicaCount }}
