@@ -157,7 +157,7 @@ backend:
   containerName: backend
   image:
     repository: ridakubelabacr.azurecr.io/backend
-    tag: "a0504473809294d9b2123fc625e5933452b56158"
+    tag: "9fc695103440c04cfd1b769507ac145f7fe95d45"
     pullPolicy: IfNotPresent
   containerPort: 3001
   serviceAccountName: backend-observer
@@ -233,7 +233,7 @@ frontend:
   containerName: frontend
   image:
     repository: ridakubelabacr.azurecr.io/frontend
-    tag: "a0504473809294d9b2123fc625e5933452b56158"
+    tag: "9fc695103440c04cfd1b769507ac145f7fe95d45"
     pullPolicy: IfNotPresent
   containerPort: 80
   livenessProbe:
