@@ -32,6 +32,13 @@ jobs:
         run: npm audit --omit=dev --audit-level=high
       - run: npm run lint
       - run: npm test
+      - name: Run Trivy filesystem scan
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          scan-type: fs
+          scan-ref: .
+          severity: HIGH,CRITICAL
+          exit-code: '1'
       - run: npm run build
 
   backend:
@@ -52,5 +59,12 @@ jobs:
 
       - run: npm ci
       - run: npm test
+      - name: Run Trivy filesystem scan
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          scan-type: fs
+          scan-ref: .
+          severity: HIGH,CRITICAL
+          exit-code: '1'
       - name: Audit backend dependencies
         run: npm audit --omit=dev --audit-level=high
