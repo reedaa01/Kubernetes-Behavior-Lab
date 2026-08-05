@@ -39,7 +39,7 @@ A hands-on Kubernetes observability lab built with a real multi-service stack. V
 ## Folder Structure
 
 ```
-k8s-demo-shop/
+Kubernetes-Behavior-Lab/
 ├── frontend/
 │   ├── src/
 │   │   ├── App.jsx          # Lab dashboard with cluster panels
