@@ -9,6 +9,7 @@ spec:
   tls:
     - hosts:
         - coupleshere.online
+        - www.coupleshere.online
       secretName: coupleshere-tls
   rules:
     {{- toYaml .Values.ingressCustom.rules | nindent 4 }}
