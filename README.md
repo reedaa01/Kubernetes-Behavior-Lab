@@ -25,33 +25,9 @@ A hands-on Kubernetes observability lab that deploys a real multi-service stack 
 ## Architecture
 
 ```
-┌─────────────────┐
-│    Frontend     │  React + Vite → Nginx (port 80)
-│  Lab Dashboard  │  polls /lab/cluster every 2s
-└────────┬────────┘
-         │ HTTP (Nginx proxy / Ingress-NGINX)
-         ▼
-┌─────────────────┐
-│    Backend      │  Node.js + Express (port 3001)
-│  Lab API        │  reads Kubernetes API in-cluster
-└────────┬────────┘
-         │ TCP
-         ▼
-┌─────────────────┐
-│     Redis       │  visit counter + cache (port 6379)
-└─────────────────┘
-         │
-         ▼
-┌─────────────────┐
-│  Kubernetes API │  pods / deployments / HPA / metrics
-│  (in-cluster)   │  accessed via backend-observer SA
-└─────────────────┘
-         ▲
-         │ GitOps sync
-┌─────────────────┐
-│     ArgoCD      │  watches kubelab/ Helm chart
-│  (automated)    │  prune + self-heal enabled
-└─────────────────┘
+<img width="1672" height="941" alt="Architecture" src="https://github.com/user-attachments/assets/96fcab9e-4ade-4ed6-b7c5-1f871ead1038" />
+
+
 ```
 
 **Key capabilities:**
