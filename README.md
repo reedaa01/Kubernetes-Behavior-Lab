@@ -24,11 +24,11 @@ A hands-on Kubernetes observability lab that deploys a real multi-service stack 
 
 ## Architecture
 
-```
+
 <img width="1672" height="941" alt="Architecture" src="https://github.com/user-attachments/assets/96fcab9e-4ade-4ed6-b7c5-1f871ead1038" />
 
 
-```
+
 
 **Key capabilities:**
 
