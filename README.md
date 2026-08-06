@@ -1,8 +1,45 @@
-# 🚀 KubeLab – End-to-End DevOps, GitOps & Kubernetes Platform on Microsoft Azure
+# 🚀 Kubernetes Behavior Lab
 
+![Azure AKS](https://img.shields.io/badge/Azure-AKS-0078D4?logo=microsoftazure&logoColor=white)
+![Kubernetes](https://img.shields.io/badge/Kubernetes-v1.35-326CE5?logo=kubernetes&logoColor=white)
+![Argo CD](https://img.shields.io/badge/GitOps-ArgoCD-EF7B4D?logo=argo&logoColor=white)
+![GitHub Actions](https://img.shields.io/badge/CI-GitHub_Actions-2088FF?logo=githubactions&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-2496ED?logo=docker&logoColor=white)
+![Helm](https://img.shields.io/badge/Helm-0F1689?logo=helm&logoColor=white)
 
-KubeLab is a production-style DevOps project that demonstrates the complete software delivery lifecycle—from code commit to automated deployment on Azure Kubernetes Service (AKS).
-The project combines CI/CD, GitOps, Kubernetes, monitoring, security, containerization, and cloud-native best practices into a single automated deployment platform.
+### End-to-End DevOps, GitOps & Kubernetes Platform on Microsoft Azure
+
+Kubernetes Behavior Lab is a production-style DevOps project that demonstrates the complete software delivery lifecycle—from code commit to automated deployment on Azure Kubernetes Service (AKS).
+
+The project integrates GitHub Actions, Azure Container Registry (ACR), Helm, Argo CD, Kubernetes, monitoring, security, and HTTPS into a fully automated GitOps workflow.
+
+---
+
+## 🎯 Project Objectives
+
+- Build a complete CI/CD pipeline using GitHub Actions.
+- Implement GitOps with Argo CD and Helm.
+- Deploy a multi-tier application on Azure Kubernetes Service (AKS).
+- Secure workloads using RBAC, Network Policies, HTTPS, and Trivy.
+- Monitor the platform with Prometheus and Grafana.
+- Follow production-oriented Kubernetes best practices.
+
+---
+
+## ✨ Features
+
+- ☁️ Azure Kubernetes Service (AKS)
+- 🚀 GitHub Actions CI/CD
+- 🔄 GitOps with Argo CD
+- 📦 Helm Charts
+- 🐳 Docker & Azure Container Registry
+- 🌐 NGINX Ingress Controller
+- 🔒 HTTPS with cert-manager & Let's Encrypt
+- 📈 Horizontal Pod Autoscaler (HPA)
+- 🛡️ RBAC, ServiceAccounts & NetworkPolicies
+- 🔍 Trivy Security Scanning
+- 📊 Prometheus & Grafana Monitoring
+- 💾 Persistent Storage (PVC)
 
 ---
 
