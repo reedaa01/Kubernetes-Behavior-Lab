@@ -1,9 +1,5 @@
-<img width="1700" height="1132" alt="image" src="https://github.com/user-attachments/assets/d4e64466-448f-4175-a056-300e75839bc5" /># 🚀 KubeLab – Production GitOps Pipeline on Azure Kubernetes Service
+# 🚀 KubeLab – Production GitOps Pipeline on Azure Kubernetes Service
 
-[![CI](https://github.com/wissemsghaier/k8s-demo-shop/actions/workflows/ci.yaml/badge.svg)](https://github.com/wissemsghaier/k8s-demo-shop/actions/workflows/ci.yaml)
-[![Publish Images](https://github.com/wissemsghaier/k8s-demo-shop/actions/workflows/publish.yml/badge.svg)](https://github.com/wissemsghaier/k8s-demo-shop/actions/workflows/publish.yml)
-[![CodeQL](https://github.com/wissemsghaier/k8s-demo-shop/actions/workflows/codeql.yml/badge.svg)](https://github.com/wissemsghaier/k8s-demo-shop/actions/workflows/codeql.yml)
-[![Trivy Scan](https://github.com/wissemsghaier/k8s-demo-shop/actions/workflows/trivy.yml/badge.svg)](https://github.com/wissemsghaier/k8s-demo-shop/actions/workflows/trivy.yml)
 
 A hands-on Kubernetes observability lab that deploys a real multi-service stack (React frontend, Node.js backend, Redis) onto a Kubernetes cluster via Helm and ArgoCD. It provides a live browser dashboard to visualize pod behavior, HPA scaling events, and per-pod CPU/memory usage — all driven by the in-cluster Kubernetes API.
 
