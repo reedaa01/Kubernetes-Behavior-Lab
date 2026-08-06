@@ -1,8 +1,11 @@
 # 🚀 KubeLab – Production GitOps Pipeline on Azure Kubernetes Service
 
 
-A hands-on Kubernetes observability lab that deploys a real multi-service stack (React frontend, Node.js backend, Redis) onto a Kubernetes cluster via Helm and ArgoCD. It provides a live browser dashboard to visualize pod behavior, HPA scaling events, and per-pod CPU/memory usage — all driven by the in-cluster Kubernetes API.
+# End-to-End DevOps, GitOps & Kubernetes Platform on Microsoft Azure
 
+KubeLab is a production-style DevOps project that demonstrates the complete software delivery lifecycle—from code commit to automated deployment on Azure Kubernetes Service (AKS).
+
+The project combines CI/CD, GitOps, Kubernetes, monitoring, security, containerization, and cloud-native best practices into a single automated deployment platform.
 ---
 
 ## Table of Contents
