@@ -304,7 +304,7 @@ function App() {
   return (
     <div className="page">
       <header className="hero">
-        <h1>Kubernetes Behavior Lab V1.0</h1>
+        <h1>Kubernetes Behavior Lab V2.0</h1>
         <p>Generate traffic, inject delay and errors, and observe live pod behavior.</p>
       </header>
 
