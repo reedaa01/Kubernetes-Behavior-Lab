@@ -13,6 +13,10 @@ Kubernetes Behavior Lab is a production-style DevOps project that demonstrates t
 
 The project integrates GitHub Actions, Azure Container Registry (ACR), Helm, Argo CD, Kubernetes, monitoring, security, and HTTPS into a fully automated GitOps workflow.
 
+## 🎥 Demo Video
+
+[Watch the project demonstration on YouTube](https://www.youtube.com/watch?v=MkYBMiuQiMs)
+
 ---
 
 ## 🎯 Project Objectives
