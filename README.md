@@ -1,7 +1,6 @@
 # 🚀 KubeLab – Production GitOps Pipeline on Azure Kubernetes Service
 
-
-# End-to-End DevOps, GitOps & Kubernetes Platform on Microsoft Azure
+End-to-End DevOps, GitOps & Kubernetes Platform on Microsoft Azure
 
 KubeLab is a production-style DevOps project that demonstrates the complete software delivery lifecycle—from code commit to automated deployment on Azure Kubernetes Service (AKS).
 
