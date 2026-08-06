@@ -1,4 +1,4 @@
-# Kubernetes Behavior Lab
+<img width="1700" height="1132" alt="image" src="https://github.com/user-attachments/assets/d4e64466-448f-4175-a056-300e75839bc5" /># 🚀 KubeLab – Production GitOps Pipeline on Azure Kubernetes Service
 
 [![CI](https://github.com/wissemsghaier/k8s-demo-shop/actions/workflows/ci.yaml/badge.svg)](https://github.com/wissemsghaier/k8s-demo-shop/actions/workflows/ci.yaml)
 [![Publish Images](https://github.com/wissemsghaier/k8s-demo-shop/actions/workflows/publish.yml/badge.svg)](https://github.com/wissemsghaier/k8s-demo-shop/actions/workflows/publish.yml)
@@ -170,36 +170,9 @@ This project uses **Trunk-Based Development** with a single long-lived branch:
 - No staging or release branches; the Helm `values.yaml` image tags act as the promotion mechanism.
 
 ### Trigger Conditions & Flow
+<img width="1672" height="941" alt="diagram cicd" src="https://github.com/user-attachments/assets/f03a74f4-2352-4214-b876-9cecf7ba3b2d" />
 
-```
-Developer pushes to main / opens PR
-         │
-         ▼
-  ┌─────────────────────────────────────┐
-  │  CI Workflow  (ci.yaml)             │
-  │  ├─ frontend: npm ci, lint, test,   │
-  │  │            Trivy FS scan, build  │
-  │  └─ backend:  npm ci, test,         │
-  │               Trivy FS scan, audit  │
-  └─────────────────┬───────────────────┘
-                    │ on success (push to main only)
-                    ▼
-  ┌─────────────────────────────────────┐
-  │  Publish Images  (publish.yml)      │
-  │  ├─ Build & push backend → ACR      │
-  │  ├─ Build & push frontend → ACR     │
-  │  └─ yq-patch kubelab/values.yaml    │
-  │     with new SHA tags → git push    │
-  └─────────────────┬───────────────────┘
-                    │ values.yaml commit detected
-                    ▼
-  ┌─────────────────────────────────────┐
-  │  ArgoCD (automated sync)            │
-  │  ├─ Detects diff in Helm values     │
-  │  ├─ Renders & applies new manifests │
-  │  └─ Self-heals drift automatically  │
-  └─────────────────────────────────────┘
-```
+
 
 ArgoCD sync policy is set via `argocd-syncpolicy-patch.json`:
 ```json
